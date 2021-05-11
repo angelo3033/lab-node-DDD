@@ -1,16 +1,12 @@
-const http = require('http')
-const express = require('express')
+import http from 'http'
+import express from 'express'
+import alumnos from './utils/mockup'
+import MongoDB from './lib/mongo'
+
+const mongo = new MongoDB()
 const app = express()
 
 app.use(express.json());
-
-let alumnos = [
-    {id: '1',nombre: 'Angel', numero: '987674324'},
-    {id: '2',nombre: 'Michael', numero: '985654323'},
-    {id: '3',nombre: 'Juan', numero: '987656322'},
-    {id: '4', nombre: 'Luis', numero: '987664321'},
-    {id: '5', nombre: 'Jose', numero: '987664320'},
-];
 
 let date = new Date();
 
@@ -34,7 +30,7 @@ app.get('/info/:id', (request, response) => {
 })
 
 app.get('/api/alumnos',(request,response) => {
-    request.send(alumnos);
+    response.send(alumnos);
 });
 
 app.get('/api/alumnos/:id', (request, response) => {
@@ -65,24 +61,15 @@ app.post('/api/alumnos', (request, response) => {
         return;
     }
 
-    const nombres = alumnos.map((object)=>{return object['nombre']})
-    if(nombres.includes(request.body.nombre)){
-        response.status(400).send({ error: 'Este nombre ya existe' })
-        return;
-    }
-
     const alumno = {
-        id: Math.round(Math.random()*100000),
-        nombre: req.body.nombre,
-        numero: req.body.numero,
+        nombre: request.body.nombre,
+        numero: request.body.numero,
     };
     console.log(alumno)
-    alumnos.push(alumno);
-    request.send(alumno);
-    response.json(alumno)
+    mongo.create('alumno',alumno)
 });
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
